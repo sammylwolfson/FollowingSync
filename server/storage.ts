@@ -1,0 +1,214 @@
+import { 
+  users, type User, type InsertUser,
+  platforms, type Platform, type InsertPlatform,
+  platformConnections, type PlatformConnection, type InsertPlatformConnection,
+  following, type Following, type InsertFollowing,
+  syncHistory, type SyncHistory, type InsertSyncHistory
+} from "@shared/schema";
+
+export interface IStorage {
+  // User methods
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  
+  // Platform methods
+  getAllPlatforms(): Promise<Platform[]>;
+  getPlatform(id: number): Promise<Platform | undefined>;
+  getPlatformByCode(code: string): Promise<Platform | undefined>;
+  createPlatform(platform: InsertPlatform): Promise<Platform>;
+  
+  // Platform Connection methods
+  getUserPlatformConnections(userId: number): Promise<PlatformConnection[]>;
+  getPlatformConnection(id: number): Promise<PlatformConnection | undefined>;
+  getPlatformConnectionByUserAndPlatform(userId: number, platformId: number): Promise<PlatformConnection | undefined>;
+  createPlatformConnection(connection: InsertPlatformConnection): Promise<PlatformConnection>;
+  updatePlatformConnection(id: number, connection: Partial<InsertPlatformConnection>): Promise<PlatformConnection | undefined>;
+  
+  // Following methods
+  getUserFollowing(userId: number): Promise<Following[]>;
+  getUserFollowingByPlatform(userId: number, platformId: number): Promise<Following[]>;
+  getFollowing(id: number): Promise<Following | undefined>;
+  createFollowing(following: InsertFollowing): Promise<Following>;
+  deleteUserFollowingByPlatform(userId: number, platformId: number): Promise<void>;
+  
+  // Sync History methods
+  createSyncHistory(syncHistory: InsertSyncHistory): Promise<SyncHistory>;
+  updateSyncHistory(id: number, syncHistory: Partial<InsertSyncHistory>): Promise<SyncHistory | undefined>;
+  getUserSyncHistory(userId: number): Promise<SyncHistory[]>;
+}
+
+export class MemStorage implements IStorage {
+  private users: Map<number, User>;
+  private platforms: Map<number, Platform>;
+  private platformConnections: Map<number, PlatformConnection>;
+  private following: Map<number, Following>;
+  private syncHistory: Map<number, SyncHistory>;
+  
+  private userIdCounter: number = 1;
+  private platformIdCounter: number = 1;
+  private connectionIdCounter: number = 1;
+  private followingIdCounter: number = 1;
+  private syncHistoryIdCounter: number = 1;
+
+  constructor() {
+    this.users = new Map();
+    this.platforms = new Map();
+    this.platformConnections = new Map();
+    this.following = new Map();
+    this.syncHistory = new Map();
+    
+    // Initialize with default platforms
+    this.initDefaultPlatforms();
+  }
+
+  private initDefaultPlatforms() {
+    const defaultPlatforms: InsertPlatform[] = [
+      { name: "Twitter/X", code: "twitter", icon: "alternate_email", color: "#1DA1F2" },
+      { name: "Instagram", code: "instagram", icon: "photo_camera", color: "#E1306C" },
+      { name: "Facebook", code: "facebook", icon: "thumb_up", color: "#1877F2" },
+      { name: "LinkedIn", code: "linkedin", icon: "business_center", color: "#0A66C2" },
+      { name: "TikTok", code: "tiktok", icon: "music_note", color: "#000000" },
+      { name: "YouTube", code: "youtube", icon: "play_arrow", color: "#FF0000" }
+    ];
+
+    for (const platform of defaultPlatforms) {
+      this.createPlatform(platform);
+    }
+  }
+
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.username.toLowerCase() === username.toLowerCase());
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email.toLowerCase() === email.toLowerCase());
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const id = this.userIdCounter++;
+    const timestamp = new Date();
+    const newUser: User = { ...user, id, createdAt: timestamp };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+
+  // Platform methods
+  async getAllPlatforms(): Promise<Platform[]> {
+    return Array.from(this.platforms.values());
+  }
+
+  async getPlatform(id: number): Promise<Platform | undefined> {
+    return this.platforms.get(id);
+  }
+
+  async getPlatformByCode(code: string): Promise<Platform | undefined> {
+    return Array.from(this.platforms.values()).find(platform => platform.code === code);
+  }
+
+  async createPlatform(platform: InsertPlatform): Promise<Platform> {
+    const id = this.platformIdCounter++;
+    const newPlatform: Platform = { ...platform, id };
+    this.platforms.set(id, newPlatform);
+    return newPlatform;
+  }
+
+  // Platform Connection methods
+  async getUserPlatformConnections(userId: number): Promise<PlatformConnection[]> {
+    return Array.from(this.platformConnections.values())
+      .filter(conn => conn.userId === userId);
+  }
+
+  async getPlatformConnection(id: number): Promise<PlatformConnection | undefined> {
+    return this.platformConnections.get(id);
+  }
+
+  async getPlatformConnectionByUserAndPlatform(userId: number, platformId: number): Promise<PlatformConnection | undefined> {
+    return Array.from(this.platformConnections.values())
+      .find(conn => conn.userId === userId && conn.platformId === platformId);
+  }
+
+  async createPlatformConnection(connection: InsertPlatformConnection): Promise<PlatformConnection> {
+    const id = this.connectionIdCounter++;
+    const newConnection: PlatformConnection = { ...connection, id };
+    this.platformConnections.set(id, newConnection);
+    return newConnection;
+  }
+
+  async updatePlatformConnection(id: number, connection: Partial<InsertPlatformConnection>): Promise<PlatformConnection | undefined> {
+    const existingConnection = this.platformConnections.get(id);
+    if (!existingConnection) return undefined;
+
+    const updatedConnection = { ...existingConnection, ...connection };
+    this.platformConnections.set(id, updatedConnection);
+    return updatedConnection;
+  }
+
+  // Following methods
+  async getUserFollowing(userId: number): Promise<Following[]> {
+    return Array.from(this.following.values())
+      .filter(following => following.userId === userId);
+  }
+
+  async getUserFollowingByPlatform(userId: number, platformId: number): Promise<Following[]> {
+    return Array.from(this.following.values())
+      .filter(following => following.userId === userId && following.platformId === platformId);
+  }
+
+  async getFollowing(id: number): Promise<Following | undefined> {
+    return this.following.get(id);
+  }
+
+  async createFollowing(followingData: InsertFollowing): Promise<Following> {
+    const id = this.followingIdCounter++;
+    const timestamp = new Date();
+    const newFollowing: Following = { 
+      ...followingData, 
+      id, 
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    this.following.set(id, newFollowing);
+    return newFollowing;
+  }
+
+  async deleteUserFollowingByPlatform(userId: number, platformId: number): Promise<void> {
+    for (const [id, following] of this.following.entries()) {
+      if (following.userId === userId && following.platformId === platformId) {
+        this.following.delete(id);
+      }
+    }
+  }
+
+  // Sync History methods
+  async createSyncHistory(syncHistoryData: InsertSyncHistory): Promise<SyncHistory> {
+    const id = this.syncHistoryIdCounter++;
+    const startTime = new Date();
+    const newSyncHistory: SyncHistory = { ...syncHistoryData, id, startTime };
+    this.syncHistory.set(id, newSyncHistory);
+    return newSyncHistory;
+  }
+
+  async updateSyncHistory(id: number, syncHistoryData: Partial<InsertSyncHistory>): Promise<SyncHistory | undefined> {
+    const existingSyncHistory = this.syncHistory.get(id);
+    if (!existingSyncHistory) return undefined;
+
+    const updatedSyncHistory = { ...existingSyncHistory, ...syncHistoryData };
+    this.syncHistory.set(id, updatedSyncHistory);
+    return updatedSyncHistory;
+  }
+
+  async getUserSyncHistory(userId: number): Promise<SyncHistory[]> {
+    return Array.from(this.syncHistory.values())
+      .filter(history => history.userId === userId)
+      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+  }
+}
+
+export const storage = new MemStorage();
