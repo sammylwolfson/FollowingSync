@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  Dashboard, 
+  LayoutDashboard, 
   Users, 
   RefreshCw, 
   Settings, 
@@ -97,7 +97,7 @@ function SidebarContent({ user, handleLogout, activeTab, setActiveTab }) {
               )}
               onClick={() => setActiveTab("dashboard")}
             >
-              <Dashboard className="mr-3 h-5 w-5 text-current" />
+              <LayoutDashboard className="mr-3 h-5 w-5 text-current" />
               Dashboard
             </a>
           </li>
