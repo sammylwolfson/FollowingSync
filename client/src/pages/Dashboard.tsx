@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMobile } from "@/hooks/use-mobile";
 import { useFollowing } from "@/hooks/useFollowing";
 import { usePlatforms } from "@/hooks/usePlatforms";
-import { RefreshCw, FileDown } from "lucide-react";
+import { Sync, FileDown } from "lucide-react";
 
 export default function Dashboard() {
   const [location, navigate] = useLocation();
@@ -123,7 +123,7 @@ export default function Dashboard() {
                 onClick={handleSyncNow}
                 disabled={isSyncing || connections.length === 0}
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <Sync className="mr-2 h-4 w-4" />
                 Sync Now
               </Button>
               <Button 
