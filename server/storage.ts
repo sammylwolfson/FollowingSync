@@ -216,8 +216,8 @@ export class MemStorage implements IStorage {
 
 export class DatabaseStorage implements IStorage {
   private async initializeDefaultPlatforms() {
-    // Check if platforms already exist
-    const existingPlatforms = await this.getAllPlatforms();
+    // Check if platforms already exist (avoid infinite recursion)
+    const existingPlatforms = await db.select().from(platforms);
     if (existingPlatforms.length > 0) {
       return; // Platforms already initialized
     }
