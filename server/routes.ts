@@ -130,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
     } catch (error) {
-      return res.status(400).json({ message: error.message });
+      return res.status(400).json({ message: (error as Error)?.message });
     }
   });
 
@@ -388,7 +388,7 @@ async function processSyncInBackground(userId: number, connections: any[]) {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Get mock data based on platform
-      const mockData = mockSocialMediaData[platformCode]?.following || [];
+      const mockData = (mockSocialMediaData as any)[platformCode]?.following || [];
       
       // Update sync history with total items
       await storage.updateSyncHistory(syncHistory.id, {
@@ -446,7 +446,7 @@ async function processSyncInBackground(userId: number, connections: any[]) {
       if (syncHistory) {
         await storage.updateSyncHistory(syncHistory.id, {
           status: 'failed',
-          error: error.message,
+          error: (error as Error)?.message,
           endTime: new Date()
         });
       }

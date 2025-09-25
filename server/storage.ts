@@ -117,7 +117,7 @@ export class MemStorage implements IStorage {
 
   async createPlatform(platform: InsertPlatform): Promise<Platform> {
     const id = this.platformIdCounter++;
-    const newPlatform: Platform = { ...platform, id };
+    const newPlatform: Platform = { ...platform, id, enabled: platform.enabled ?? null };
     this.platforms.set(id, newPlatform);
     return newPlatform;
   }
@@ -139,7 +139,17 @@ export class MemStorage implements IStorage {
 
   async createPlatformConnection(connection: InsertPlatformConnection): Promise<PlatformConnection> {
     const id = this.connectionIdCounter++;
-    const newConnection: PlatformConnection = { ...connection, id };
+    const newConnection: PlatformConnection = { 
+      ...connection, 
+      id,
+      status: connection.status ?? null,
+      accessToken: connection.accessToken ?? null,
+      refreshToken: connection.refreshToken ?? null,
+      connected: connection.connected ?? null,
+      tokenExpiry: connection.tokenExpiry ?? null,
+      platformUsername: connection.platformUsername ?? null,
+      lastSynced: connection.lastSynced ?? null
+    };
     this.platformConnections.set(id, newConnection);
     return newConnection;
   }
@@ -175,7 +185,11 @@ export class MemStorage implements IStorage {
       ...followingData, 
       id, 
       createdAt: timestamp,
-      updatedAt: timestamp
+      updatedAt: timestamp,
+      displayName: followingData.displayName ?? null,
+      profilePictureUrl: followingData.profilePictureUrl ?? null,
+      platformData: followingData.platformData ?? null,
+      platformUserId: followingData.platformUserId ?? null
     };
     this.following.set(id, newFollowing);
     return newFollowing;
@@ -193,7 +207,16 @@ export class MemStorage implements IStorage {
   async createSyncHistory(syncHistoryData: InsertSyncHistory): Promise<SyncHistory> {
     const id = this.syncHistoryIdCounter++;
     const startTime = new Date();
-    const newSyncHistory: SyncHistory = { ...syncHistoryData, id, startTime };
+    const newSyncHistory: SyncHistory = { 
+      ...syncHistoryData, 
+      id, 
+      startTime,
+      error: syncHistoryData.error ?? null,
+      status: syncHistoryData.status ?? null,
+      endTime: syncHistoryData.endTime ?? null,
+      totalItems: syncHistoryData.totalItems ?? null,
+      itemsProcessed: syncHistoryData.itemsProcessed ?? null
+    };
     this.syncHistory.set(id, newSyncHistory);
     return newSyncHistory;
   }
@@ -210,7 +233,7 @@ export class MemStorage implements IStorage {
   async getUserSyncHistory(userId: number): Promise<SyncHistory[]> {
     return Array.from(this.syncHistory.values())
       .filter(history => history.userId === userId)
-      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+      .sort((a, b) => (b.startTime?.getTime() ?? 0) - (a.startTime?.getTime() ?? 0));
   }
 }
 

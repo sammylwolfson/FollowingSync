@@ -5,8 +5,11 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx server/index.ts",
+    "dev:next": "next dev",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build:next": "next build",
     "start": "NODE_ENV=production node dist/index.js",
+    "start:next": "next start",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },

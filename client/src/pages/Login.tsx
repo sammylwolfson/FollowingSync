@@ -108,7 +108,7 @@ function LoginForm() {
     } catch (error) {
       toast({
         title: "Login failed",
-        description: error.message || "Invalid username or password",
+        description: (error as Error)?.message || "Invalid username or password",
         variant: "destructive",
       });
     } finally {
@@ -187,7 +187,7 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
     } catch (error) {
       toast({
         title: "Registration failed",
-        description: error.message || "Failed to create account",
+        description: (error as Error)?.message || "Failed to create account",
         variant: "destructive",
       });
     } finally {
