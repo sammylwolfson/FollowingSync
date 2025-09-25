@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
@@ -22,7 +22,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ user, isOpen, onToggle, activeTab, setActiveTab }: SidebarProps) {
-  const [location, navigate] = useLocation();
+  const router = useRouter();
   const { logout } = useAuth();
   const isMobile = useMobile();
   const { toast } = useToast();
@@ -30,7 +30,7 @@ export default function Sidebar({ user, isOpen, onToggle, activeTab, setActiveTa
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login");
+      router.push("/login");
     } catch (error) {
       toast({
         title: "Logout failed",

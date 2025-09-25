@@ -1,22 +1,4 @@
 {
-  "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm run build:next",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev:next",
-  "functions": {
-    "src/app/**": {
-      "runtime": "@vercel/node@18"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "buildCommand": "npm run build:next"
 }

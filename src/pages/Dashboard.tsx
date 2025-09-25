@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Sidebar from "@/components/Sidebar";
 import PlatformStatusCard from "@/components/PlatformStatusCard";
@@ -15,7 +15,7 @@ import { usePlatforms } from "@/hooks/usePlatforms";
 import { RefreshCw, FileDown } from "lucide-react";
 
 export default function Dashboard() {
-  const [location, navigate] = useLocation();
+  const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const isMobile = useMobile();
@@ -33,9 +33,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate("/login");
+      router.push("/login");
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, router]);
 
   const handleSyncNow = async () => {
     try {

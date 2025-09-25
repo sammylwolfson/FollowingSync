@@ -1,8 +1,0 @@
-{
-  "/_app": "pages/_app.js",
-  "/_error": "pages/_error.js",
-  "/Dashboard": "pages/Dashboard.js",
-  "/Login": "pages/Login.js",
-  "/not-found": "pages/not-found.js",
-  "/_document": "pages/_document.js"
-}
