@@ -19,7 +19,11 @@ export function log(message: string, source = "express") {
     hour12: true,
   });
 
-  console.log(`${formattedTime} [${source}] ${message}`);
+  // Add more context for Vercel debugging
+  const env = process.env.VERCEL ? "[VERCEL]" : "[LOCAL]";
+  const nodeEnv = process.env.NODE_ENV || "development";
+  
+  console.log(`${formattedTime} ${env}[${nodeEnv}][${source}] ${message}`);
 }
 
 export async function setupVite(app: Express, server: Server) {
@@ -71,18 +75,32 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
+  // In Vercel environment, static files are served differently
+  // But we still need to handle SPA routing for the React app
   const distPath = path.resolve(__dirname, "public");
+  
+  log(`Setting up static file serving from: ${distPath}`);
 
   if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
+    const error = `Could not find the build directory: ${distPath}, make sure to build the client first`;
+    log(error);
+    throw new Error(error);
+  }
+
+  // List files in the dist directory for debugging
+  try {
+    const files = fs.readdirSync(distPath);
+    log(`Found static files: ${files.join(", ")}`);
+  } catch (e) {
+    log(`Error reading dist directory: ${e}`);
   }
 
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    const indexPath = path.resolve(distPath, "index.html");
+    log(`Serving SPA fallback: ${indexPath}`);
+    res.sendFile(indexPath);
   });
 }
