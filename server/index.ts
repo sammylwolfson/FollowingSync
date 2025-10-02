@@ -37,6 +37,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Log environment info for debugging
+  log(`Starting server - NODE_ENV: ${process.env.NODE_ENV}, VERCEL: ${process.env.VERCEL}, PORT: ${process.env.PORT}`);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -50,20 +53,29 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  const isDevelopment = app.get("env") === "development" || (!process.env.NODE_ENV || process.env.NODE_ENV === "development");
+  const isVercel = !!process.env.VERCEL;
+  
+  log(`Environment check - isDevelopment: ${isDevelopment}, isVercel: ${isVercel}`);
+  
+  if (isDevelopment && !isVercel) {
+    log("Setting up Vite development server");
     await setupVite(app, server);
   } else {
+    log("Setting up static file serving for production");
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Use Vercel's dynamic port or fallback to 5000 for local development
+  // In production (Vercel), use the PORT environment variable
+  // In development, use port 5000 (not firewalled)
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
+  const host = process.env.VERCEL ? "0.0.0.0" : "0.0.0.0";
+  
   server.listen({
     port,
-    host: "0.0.0.0",
-    reusePort: true,
+    host,
+    reusePort: !process.env.VERCEL, // Disable reusePort on Vercel
   }, () => {
     log(`serving on port ${port}`);
   });
