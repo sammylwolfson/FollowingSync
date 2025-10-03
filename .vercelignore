@@ -1,0 +1,7 @@
+.next
+pages
+app
+src/pages
+client/src/views
+*.replit
+.replit

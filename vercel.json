@@ -1,4 +1,8 @@
 {
+  "version": 2,
+  "framework": null,
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "functions": {
     "server/index.ts": {
       "runtime": "@vercel/node@3"
