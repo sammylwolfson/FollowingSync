@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "framework": null,
-  "buildCommand": "npm run vercel-build",
   "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/public"
+      }
+    },
     {
       "src": "dist/index.js",
       "use": "@vercel/node"
@@ -17,13 +22,5 @@
       "src": "/(.*)",
       "dest": "/dist/index.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "dist/index.js": {
-      "includeFiles": "dist/public/**"
-    }
-  }
+  ]
 }
