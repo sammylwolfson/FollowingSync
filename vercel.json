@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "framework": null,
+  "buildCommand": "npm run vercel-build",
   "builds": [
     {
       "src": "dist/index.js",

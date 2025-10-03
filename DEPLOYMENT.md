@@ -15,6 +15,10 @@ The app uses a custom build process:
 1. `vite build` - Builds the React frontend to `dist/public`
 2. `esbuild` - Bundles the Node.js server to `dist/index.js`
 
+## Important: Framework Detection Override
+
+The `vercel.json` includes `"framework": null` to prevent Vercel from auto-detecting this as a Next.js project. This is a custom Node.js + React application, not Next.js.
+
 ## Files Added/Modified for Vercel
 
 ### `vercel.json`
