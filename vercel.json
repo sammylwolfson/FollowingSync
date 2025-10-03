@@ -1,17 +1,16 @@
 {
   "version": 2,
-  "framework": null,
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "functions": {
-    "server/index.ts": {
-      "runtime": "@vercel/node@3"
-    }
-  },
-  "rewrites": [
+  "name": "followingsync-custom",
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/api/server"
+      "src": "api/server.ts",
+      "use": "@vercel/node@3"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/server"
     }
   ]
 }

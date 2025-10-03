@@ -2,7 +2,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import express from 'express';
 import { createServer } from 'http';
 import { registerRoutes } from '../server/routes.js';
-import { serveStatic, log } from '../server/vite.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -12,7 +17,7 @@ app.use(express.urlencoded({ extended: false }));
 // Add request logging middleware
 app.use((req: any, res: any, next: any) => {
   const start = Date.now();
-  const path = req.path;
+  const reqPath = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   const originalResJson = res.json;
@@ -23,8 +28,8 @@ app.use((req: any, res: any, next: any) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+    if (reqPath.startsWith("/api")) {
+      let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -33,7 +38,7 @@ app.use((req: any, res: any, next: any) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      console.log(logLine);
     }
   });
 
@@ -48,7 +53,7 @@ let initialized = false;
 
 async function initializeApp() {
   if (!initialized) {
-    log("Initializing Vercel serverless function");
+    console.log("Initializing Vercel serverless function");
     
     await registerRoutes(app);
     
@@ -60,11 +65,28 @@ async function initializeApp() {
       console.error(err);
     });
 
-    // Setup static file serving for production
-    serveStatic(app);
+    // Serve static files - simple static file serving
+    const publicPath = path.resolve(__dirname, '../dist/public');
+    
+    if (fs.existsSync(publicPath)) {
+      app.use(express.static(publicPath));
+      console.log(`Serving static files from: ${publicPath}`);
+    } else {
+      console.log(`Static directory not found: ${publicPath}`);
+    }
+
+    // SPA fallback
+    app.use('*', (_req: any, res: any) => {
+      const indexPath = path.resolve(publicPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).json({ error: 'Application not built' });
+      }
+    });
     
     initialized = true;
-    log("Vercel serverless function initialized");
+    console.log("Vercel serverless function initialized");
   }
 }
 
